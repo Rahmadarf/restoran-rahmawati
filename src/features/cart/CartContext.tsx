@@ -6,87 +6,119 @@ import {
   type ReactNode,
 } from 'react'
 
-import { productById } from '../../data/menu'
 import { RESTAURANT } from '../../data/restaurant'
-import { CartContext, type Cart, type CartContextValue } from './cart-context'
+import { normalizeRow, sameSelection, unitPrice } from '../../lib/cart-model'
+import type { CartRow } from '../../types/cart'
+import {
+  CartContext,
+  type AddResult,
+  type CartContextValue,
+} from './cart-context'
 
-const STORAGE_KEY = 'rahmawati-preview-cart'
+const STORAGE_KEY = 'rahmawati-cart-v2'
+const LEGACY_KEY = 'rahmawati-preview-cart'
 
-function readStoredCart(): Cart {
-  const cart: Cart = {}
+function read<T>(key: string, fallback: T): T {
   try {
-    const stored = JSON.parse(sessionStorage.getItem(STORAGE_KEY) || '{}')
-    for (const [id, qty] of Object.entries(stored ?? {})) {
-      const product = productById(id)
-      if (
-        product &&
-        !product.sold &&
-        Number.isInteger(qty) &&
-        (qty as number) > 0 &&
-        (qty as number) <= RESTAURANT.maxQtyPerItem
-      ) {
-        cart[id] = qty as number
-      }
-    }
+    return (JSON.parse(sessionStorage.getItem(key) as string) as T) ?? fallback
   } catch {
     /* Ketersediaan storage berbeda antarbrowser. */
+    return fallback
   }
-  return cart
+}
+
+/** Memuat keranjang v2, dengan migrasi dari keranjang preview tahap pertama. */
+function readStoredCart(): CartRow[] {
+  const stored = read<unknown>(STORAGE_KEY, null)
+  if (Array.isArray(stored)) {
+    return stored.map((row) => normalizeRow(row)).filter((row) => row !== null)
+  }
+
+  const legacy = read<Record<string, number> | null>(LEGACY_KEY, null)
+  if (legacy && typeof legacy === 'object') {
+    return Object.entries(legacy)
+      .map(([id, qty]) => normalizeRow({ id, qty }))
+      .filter((row) => row !== null)
+  }
+  return []
 }
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [cart, setCart] = useState<Cart>(readStoredCart)
+  const [rows, setRows] = useState<CartRow[]>(readStoredCart)
 
   useEffect(() => {
     try {
-      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(cart))
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(rows))
     } catch {
       /* Abaikan jika storage diblokir. */
     }
-  }, [cart])
+  }, [rows])
 
-  const add = useCallback<CartContextValue['add']>((id) => {
-    const product = productById(id)
-    if (!product || product.sold) return 'rejected'
-    let result: 'added' | 'max' = 'added'
-    setCart((current) => {
-      if ((current[id] || 0) >= RESTAURANT.maxQtyPerItem) {
+  const addRow = useCallback<CartContextValue['addRow']>((input) => {
+    const row = normalizeRow(input)
+    if (!row) return 'rejected'
+
+    let result: AddResult = 'added'
+    setRows((current) => {
+      const existing = current.find((item) => sameSelection(item, row))
+      if (existing && existing.qty + row.qty > RESTAURANT.maxQtyPerItem) {
         result = 'max'
         return current
       }
-      return { ...current, [id]: (current[id] || 0) + 1 }
+      if (existing) {
+        return current.map((item) =>
+          item.key === existing.key
+            ? { ...item, qty: item.qty + row.qty }
+            : item,
+        )
+      }
+      return [...current, row]
     })
     return result
   }, [])
 
+  const updateRow = useCallback<CartContextValue['updateRow']>((key, input) => {
+    const row = normalizeRow({ ...input, key })
+    if (!row) return
+    setRows((current) => current.map((item) => (item.key === key ? row : item)))
+  }, [])
+
   const changeQuantity = useCallback<CartContextValue['changeQuantity']>(
-    (id, delta) => {
-      setCart((current) => {
-        const next = { ...current }
-        next[id] = Math.min(RESTAURANT.maxQtyPerItem, (next[id] || 0) + delta)
-        if (next[id] <= 0) delete next[id]
-        return next
-      })
+    (key, delta) => {
+      setRows((current) =>
+        current
+          .map((item) =>
+            item.key === key
+              ? {
+                  ...item,
+                  qty: Math.min(RESTAURANT.maxQtyPerItem, item.qty + delta),
+                }
+              : item,
+          )
+          .filter((item) => item.qty > 0),
+      )
     },
     [],
   )
 
-  const remove = useCallback<CartContextValue['remove']>((id) => {
-    setCart((current) => {
-      const next = { ...current }
-      delete next[id]
-      return next
-    })
+  const remove = useCallback<CartContextValue['remove']>((key) => {
+    setRows((current) => current.filter((item) => item.key !== key))
   }, [])
 
   const value = useMemo<CartContextValue>(() => {
-    const count = Object.values(cart).reduce((sum, qty) => sum + qty, 0)
-    const total = Object.entries(cart).reduce(
-      (sum, [id, qty]) => sum + (productById(id)?.price ?? 0) * qty,
-      0,
-    )
-    return { cart, count, total, add, changeQuantity, remove }
-  }, [cart, add, changeQuantity, remove])
+    const count = rows.reduce((sum, row) => sum + row.qty, 0)
+    const total = rows.reduce((sum, row) => sum + unitPrice(row) * row.qty, 0)
+    return {
+      rows,
+      count,
+      total,
+      addRow,
+      updateRow,
+      changeQuantity,
+      remove,
+      rowByKey: (key: string) => rows.find((row) => row.key === key),
+    }
+  }, [rows, addRow, updateRow, changeQuantity, remove])
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>
 }

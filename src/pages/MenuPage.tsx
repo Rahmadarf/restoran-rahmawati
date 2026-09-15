@@ -87,7 +87,7 @@ export function MenuPage() {
   const scrollToHeading = useRef(false)
 
   const searchRef = useRef<HTMLInputElement>(null)
-  const { count, total, add } = useCart()
+  const { count, total, addRow } = useCart()
   const { openCart } = useOverlay()
   const toast = useToast()
 
@@ -219,7 +219,7 @@ export function MenuPage() {
                 item={item}
                 variant="menu"
                 onAdd={() => {
-                  const result = add(item.id)
+                  const result = addRow({ id: item.id, qty: 1 })
                   if (result === 'max') {
                     toast(
                       `Maksimal ${RESTAURANT.maxQtyPerItem} porsi per menu untuk preview ini.`,

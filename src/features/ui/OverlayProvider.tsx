@@ -11,7 +11,6 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { CartItemRow } from '../../components/menu/CartItemRow'
 import { Dialog } from '../../components/ui/Dialog'
 import { useToast } from '../../components/ui/toast-context'
-import { productById } from '../../data/menu'
 import { money } from '../../lib/currency'
 import { useCart } from '../cart/cart-context'
 import {
@@ -75,7 +74,7 @@ export function OverlayProvider({ children }: { children: ReactNode }) {
   const [emptyPreview, setEmptyPreview] = useState(false)
   const pendingFocus = useRef(false)
 
-  const { cart, count, total, changeQuantity, remove } = useCart()
+  const { rows, count, total, changeQuantity, remove } = useCart()
   const toast = useToast()
   const navigate = useNavigate()
   const location = useLocation()
@@ -144,27 +143,22 @@ export function OverlayProvider({ children }: { children: ReactNode }) {
           ) : (
             <>
               <p className="small muted">Ringkasan pilihan · simulasi prototype</p>
-              {Object.entries(cart).map(([id, qty]) => {
-                const item = productById(id)
-                if (!item) return null
-                return (
-                  <CartItemRow
-                    key={id}
-                    item={item}
-                    quantity={qty}
-                    onChangeQuantity={(delta) => {
-                      if (qty + delta <= 0) pendingFocus.current = true
-                      changeQuantity(id, delta)
-                      toast('Pilihan diperbarui')
-                    }}
-                    onRemove={() => {
-                      pendingFocus.current = true
-                      remove(id)
-                      toast('Menu dihapus dari pilihan')
-                    }}
-                  />
-                )
-              })}
+              {rows.map((row) => (
+                <CartItemRow
+                  key={row.key}
+                  row={row}
+                  onChangeQuantity={(delta) => {
+                    if (row.qty + delta <= 0) pendingFocus.current = true
+                    changeQuantity(row.key, delta)
+                    toast('Pilihan diperbarui')
+                  }}
+                  onRemove={() => {
+                    pendingFocus.current = true
+                    remove(row.key)
+                    toast('Menu dihapus dari pilihan')
+                  }}
+                />
+              ))}
               <div className="cart-summary">
                 <strong>Subtotal</strong>
                 <strong>{money(total)}</strong>

@@ -1,29 +1,34 @@
+import { productById } from '../../data/menu'
+import { describeRow, unitPrice } from '../../lib/cart-model'
 import { money } from '../../lib/currency'
-import type { MenuItem } from '../../types/menu'
+import type { CartRow } from '../../types/cart'
 import { QuantitySelector } from './QuantitySelector'
 
 type CartItemRowProps = {
-  item: MenuItem
-  quantity: number
+  row: CartRow
   onChangeQuantity: (delta: number) => void
   onRemove: () => void
 }
 
 export function CartItemRow({
-  item,
-  quantity,
+  row,
   onChangeQuantity,
   onRemove,
 }: CartItemRowProps) {
+  const item = productById(row.id)
+  if (!item) return null
+
   return (
     <article className="cart-row" data-component="CartItemRow">
       <img src={`/assets/${item.img}`} alt={item.name} />
       <div className="cart-row-info">
         <h3>{item.name}</h3>
-        <p>Porsi standar · {money(item.price)}</p>
+        <p>
+          {describeRow(row)} · {money(unitPrice(row))}
+        </p>
         <QuantitySelector
           name={item.name}
-          quantity={quantity}
+          quantity={row.qty}
           onChange={onChangeQuantity}
         />
       </div>

@@ -5,7 +5,7 @@ import { useOverlay } from '../../features/ui/overlay-context'
 import { useMenuHref } from '../../hooks/useMenuHref'
 import { ArrowRightIcon, MenuBarsIcon } from '../ui/Icons'
 
-type SiteHeaderProps = { page: 'home' | 'menu' }
+type SiteHeaderProps = { page: 'home' | 'menu' | 'detail' }
 
 export function SiteHeader({ page }: SiteHeaderProps) {
   const [expanded, setExpanded] = useState(false)

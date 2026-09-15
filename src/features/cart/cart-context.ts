@@ -1,15 +1,20 @@
 import { createContext, useContext } from 'react'
 
-export type Cart = Record<string, number>
+import type { CartRow, CartRowInput } from '../../types/cart'
+
+export type AddResult = 'added' | 'max' | 'rejected'
 
 export type CartContextValue = {
-  cart: Cart
+  rows: CartRow[]
   count: number
   total: number
-  /** `max` ketika batas porsi per menu tercapai, `rejected` untuk menu habis. */
-  add: (id: string) => 'added' | 'max' | 'rejected'
-  changeQuantity: (id: string, delta: number) => void
-  remove: (id: string) => void
+  /** `max` ketika pilihan yang sama melewati batas porsi. */
+  addRow: (row: CartRowInput) => AddResult
+  /** Mengganti isi satu baris, dipakai saat mengubah pilihan dari detail menu. */
+  updateRow: (key: string, row: CartRowInput) => void
+  changeQuantity: (key: string, delta: number) => void
+  remove: (key: string) => void
+  rowByKey: (key: string) => CartRow | undefined
 }
 
 export const CartContext = createContext<CartContextValue | null>(null)

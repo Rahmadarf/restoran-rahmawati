@@ -6,7 +6,7 @@ import { SiteHeader } from './SiteHeader'
 import { WhatsAppButton } from './WhatsAppButton'
 
 type LayoutProps = {
-  page: 'home' | 'menu'
+  page: 'home' | 'menu' | 'detail'
   title: string
   children: ReactNode
 }
@@ -24,7 +24,7 @@ export function Layout({ page, title, children }: LayoutProps) {
       </a>
       <SiteHeader page={page} />
       {children}
-      <SiteFooter variant={page} />
+      <SiteFooter variant={page === 'menu' ? 'menu' : 'home'} />
       <WhatsAppButton />
       <MobileNavigation page={page} />
     </>

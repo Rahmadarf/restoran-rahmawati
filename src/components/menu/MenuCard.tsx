@@ -16,6 +16,16 @@ type MenuCardProps = {
 
 export function MenuCard({ item, variant, orderHref, onAdd }: MenuCardProps) {
   const badge = badgeLabel(item)
+  const detailHref = `/detail-menu?id=${item.id}`
+  const photo = (
+    <img
+      src={`/assets/${item.img}`}
+      alt={`${item.name} — foto ilustrasi penyajian`}
+      loading="lazy"
+      width={600}
+      height={400}
+    />
+  )
 
   return (
     <article
@@ -27,13 +37,13 @@ export function MenuCard({ item, variant, orderHref, onAdd }: MenuCardProps) {
       data-favorite={String(isFavorite(item.id))}
     >
       <div className="product-photo">
-        <img
-          src={`/assets/${item.img}`}
-          alt={`${item.name} — foto ilustrasi penyajian`}
-          loading="lazy"
-          width={600}
-          height={400}
-        />
+        {item.sold ? (
+          photo
+        ) : (
+          <Link to={detailHref} aria-label={`Lihat detail ${item.name}`}>
+            {photo}
+          </Link>
+        )}
         {badge ? (
           <span className={`badge ${badgeIsAccent(item) ? 'badge-accent' : ''}`}>
             {badge}
@@ -41,7 +51,9 @@ export function MenuCard({ item, variant, orderHref, onAdd }: MenuCardProps) {
         ) : null}
       </div>
       <div className="product-body">
-        <h3>{item.name}</h3>
+        <h3>
+          {item.sold ? item.name : <Link to={detailHref}>{item.name}</Link>}
+        </h3>
         <p>{item.desc}</p>
         <div className="product-bottom">
           <span className="price">{money(item.price)}</span>

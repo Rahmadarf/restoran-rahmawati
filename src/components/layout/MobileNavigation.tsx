@@ -4,7 +4,7 @@ import { useOverlay } from '../../features/ui/overlay-context'
 import { useMenuHref } from '../../hooks/useMenuHref'
 import { BagIcon, CalendarIcon, CutleryIcon, HomeIcon } from '../ui/Icons'
 
-type MobileNavigationProps = { page: 'home' | 'menu' }
+type MobileNavigationProps = { page: 'home' | 'menu' | 'detail' }
 
 export function MobileNavigation({ page }: MobileNavigationProps) {
   const { showInfo, openCart } = useOverlay()
