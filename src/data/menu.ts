@@ -1,0 +1,88 @@
+import type { MenuItem } from '../types/menu'
+
+/** Data dummy prototype. Tidak ada fetch agar halaman tetap bekerja offline. */
+export const MENU: MenuItem[] = [
+  {
+    id: 'ayam',
+    name: 'Ayam Bakar Rahmawati',
+    desc: 'Bumbu meresap, bakaran harum. Disajikan dengan sambal dan lalapan.',
+    price: 32000,
+    img: 'ayam-bakar.jpg',
+    cat: 'Ayam & Ikan',
+    badge: 'Favorit',
+  },
+  {
+    id: 'nasi',
+    name: 'Nasi Goreng Kampung',
+    desc: 'Nasi goreng bumbu rumahan, telur, ayam suwir, dan kerupuk.',
+    price: 28000,
+    img: 'nasi-goreng.jpg',
+    cat: 'Nasi & Mi',
+    badge: 'Favorit',
+  },
+  {
+    id: 'sate',
+    name: 'Sate Ayam Bumbu Kacang',
+    desc: '10 tusuk sate ayam dengan saus kacang dan kecap manis.',
+    price: 35000,
+    img: 'sate-ayam.jpg',
+    cat: 'Ayam & Ikan',
+    badge: 'Favorit',
+  },
+  {
+    id: 'ikan',
+    name: 'Ikan Goreng Sambal',
+    desc: 'Ikan goreng renyah, sambal terasi pedas, dan lalapan segar.',
+    price: 68000,
+    img: 'ikan-goreng.jpg',
+    cat: 'Ayam & Ikan',
+    badge: 'Pedas',
+  },
+  {
+    id: 'soto',
+    name: 'Soto Ayam Kuning',
+    desc: 'Kuah kuning hangat, ayam suwir, soun, dan perasan jeruk.',
+    price: 26000,
+    img: 'soto-ayam.jpg',
+    cat: 'Kuah & Sayur',
+    badge: 'Habis',
+    sold: true,
+  },
+  {
+    id: 'teh',
+    name: 'Es Teh Melati',
+    desc: 'Teh melati harum yang diseduh segar. Manisnya pas.',
+    price: 8000,
+    img: 'es-teh.jpg',
+    cat: 'Minuman',
+    badge: '',
+  },
+  {
+    id: 'keluarga',
+    name: 'Paket Kumpul Berempat',
+    desc: '4 ayam bakar, 4 nasi, lalapan, sambal, dan 4 es teh.',
+    price: 149000,
+    img: 'ayam-bakar.jpg',
+    cat: 'Paket Keluarga',
+    badge: 'Paket hemat',
+  },
+  {
+    id: 'soto-baru',
+    name: 'Soto Ayam + Nasi',
+    desc: 'Semangkuk soto hangat dan nasi putih untuk makan siang.',
+    price: 32000,
+    img: 'soto-ayam.jpg',
+    cat: 'Kuah & Sayur',
+    badge: 'Baru',
+  },
+]
+
+/** Menu yang ditandai favorit pada kartu dan filter. */
+export const FAVORITE_IDS = ['ayam', 'nasi', 'sate']
+
+export const isFavorite = (id: string) => FAVORITE_IDS.includes(id)
+
+export const productById = (id: string) => MENU.find((item) => item.id === id)
+
+/** Tiga menu terlaris pada Beranda. */
+export const FEATURED_IDS = ['ayam', 'nasi', 'sate']
