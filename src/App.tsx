@@ -4,6 +4,7 @@ import { ScrollManager } from './components/layout/ScrollManager'
 import { ToastProvider } from './components/ui/Toast'
 import { CartProvider } from './features/cart/CartContext'
 import { OverlayProvider } from './features/ui/OverlayProvider'
+import { DetailMenuPage } from './pages/DetailMenuPage'
 import { HomePage } from './pages/HomePage'
 import { MenuPage } from './pages/MenuPage'
 
@@ -17,6 +18,7 @@ function App() {
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/menu" element={<MenuPage />} />
+              <Route path="/detail-menu" element={<DetailMenuPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </OverlayProvider>
