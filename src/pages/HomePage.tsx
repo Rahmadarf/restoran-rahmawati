@@ -6,11 +6,17 @@ import { LocationSection } from '../components/home/LocationSection'
 import { Ribbon } from '../components/home/Ribbon'
 import { StorySection } from '../components/home/StorySection'
 import { Layout } from '../components/layout/Layout'
+import { useScrollReveal } from '../hooks/useScrollReveal'
+
+/** Hero dilewati karena sudah terlihat saat halaman dibuka. */
+const REVEAL_TARGETS = '#terlaris, #paket, #cerita, #galeri, .testimonial, #lokasi'
 
 export function HomePage() {
+  const mainRef = useScrollReveal<HTMLElement>(REVEAL_TARGETS)
+
   return (
     <Layout page="home" title="Beranda — Restoran Rahmawati">
-      <main id="main">
+      <main id="main" ref={mainRef}>
         <HeroSection />
         <Ribbon />
         <FeaturedMenuSection />

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import { Layout } from '../components/layout/Layout'
 import { CategoryTabs } from '../components/menu/CategoryTabs'
@@ -15,44 +15,32 @@ import { CATEGORIES } from '../data/categories'
 import { MENU, isFavorite } from '../data/menu'
 import { RESTAURANT } from '../data/restaurant'
 import { useCart } from '../features/cart/cart-context'
+import { useDiningSession } from '../features/dining-session/dining-session-context'
 import { useOverlay } from '../features/ui/overlay-context'
 import { badgeLabel } from '../lib/badges'
 import { money } from '../lib/currency'
 import { isValidTable } from '../lib/validation'
 import type { CategoryFilter, MenuItem } from '../types/menu'
 
-/** Konteks meja awal: URL eksplisit menang, tebakan tidak pernah dibuat. */
-function readInitialTable() {
+/**
+ * State awal halaman dari URL. Nilai meja sendiri disimpan DiningSessionProvider;
+ * di sini hanya menentukan apakah dialog error perlu dibuka.
+ */
+function readInitialState() {
   const params = new URLSearchParams(window.location.search)
   const rawTable = params.get('table')
   const rawCategory = params.get('category')
-  const category = CATEGORIES.find((item) => item.value === rawCategory)
-
-  if (rawTable !== null) {
-    if (isValidTable(rawTable)) {
-      return {
-        table: Number(rawTable),
-        takeaway: false,
-        dialogOpen: false,
-        error: null as string | null,
-        category: category?.value ?? ('Semua' as CategoryFilter),
-      }
-    }
-    return {
-      table: null,
-      takeaway: false,
-      dialogOpen: true,
-      error: `Nomor meja pada URL tidak valid. Masukkan nomor meja ${RESTAURANT.tableRange.min}–${RESTAURANT.tableRange.max}.`,
-      category: category?.value ?? ('Semua' as CategoryFilter),
-    }
-  }
+  const category =
+    CATEGORIES.find((item) => item.value === rawCategory)?.value ??
+    ('Semua' as CategoryFilter)
+  const invalidTable = rawTable !== null && !isValidTable(rawTable)
 
   return {
-    table: null,
-    takeaway: params.get('order') === 'takeaway',
-    dialogOpen: false,
-    error: null as string | null,
-    category: category?.value ?? ('Semua' as CategoryFilter),
+    dialogOpen: invalidTable,
+    error: invalidTable
+      ? `Nomor meja pada URL tidak valid. Masukkan nomor meja ${RESTAURANT.tableRange.min}–${RESTAURANT.tableRange.max}.`
+      : null,
+    category,
   }
 }
 
@@ -72,16 +60,18 @@ const haystack = (item: MenuItem) =>
   ).toLocaleLowerCase('id')
 
 export function MenuPage() {
-  const [initial] = useState(readInitialTable)
+  const [initial] = useState(readInitialState)
   const [, setSearchParams] = useSearchParams()
+  const navigate = useNavigate()
 
-  const [table, setTable] = useState<number | null>(initial.table)
-  const [takeaway, setTakeaway] = useState(initial.takeaway)
+  const { table, takeaway, setTableContext } = useDiningSession()
   const [tableDialogOpen, setTableDialogOpen] = useState(initial.dialogOpen)
   const [tableValue, setTableValue] = useState('')
   const [tableError, setTableError] = useState<string | null>(initial.error)
 
   const [category, setCategory] = useState<CategoryFilter>(initial.category)
+  /** Animasi ganti isi grid hanya setelah kategori pernah dipilih, bukan saat load. */
+  const [categoryTouched, setCategoryTouched] = useState(false)
   const [search, setSearch] = useState('')
   const [state, setState] = useState<ReviewState>('normal')
   const scrollToHeading = useRef(false)
@@ -197,6 +187,7 @@ export function MenuPage() {
           onSelect={(value) => {
             setState('normal')
             setCategory(value)
+            setCategoryTouched(true)
           }}
         />
 
@@ -209,8 +200,10 @@ export function MenuPage() {
           </div>
 
           <div
+            key={category}
             className="product-grid menu-grid"
             id="menu-grid"
+            data-swap={categoryTouched || undefined}
             hidden={showLoading || showEmpty}
           >
             {visible.map((item) => (
@@ -278,7 +271,11 @@ export function MenuPage() {
           <ReviewTools state={state} onSelect={handleStateSelect} />
         </section>
 
-        <StickyCartBar count={count} total={total} onOpen={() => openCart()} />
+        <StickyCartBar
+          count={count}
+          total={total}
+          onOpen={() => navigate('/cart')}
+        />
       </main>
 
       <TableDialog
@@ -298,16 +295,14 @@ export function MenuPage() {
             return false
           }
           const next = Number(value)
-          setTable(next)
-          setTakeaway(false)
+          setTableContext({ table: next, takeaway: false })
           updateTableUrl(next, false)
           setTableDialogOpen(false)
           toast(`Nomor meja disimpan: Meja ${next}`)
           return true
         }}
         onTakeaway={() => {
-          setTable(null)
-          setTakeaway(true)
+          setTableContext({ table: null, takeaway: true })
           updateTableUrl(null, true)
           setTableDialogOpen(false)
           toast('Jenis pesanan: dibawa pulang')

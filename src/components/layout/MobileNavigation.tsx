@@ -1,13 +1,12 @@
 import { Link } from 'react-router-dom'
 
-import { useOverlay } from '../../features/ui/overlay-context'
 import { useMenuHref } from '../../hooks/useMenuHref'
+import type { PageId } from '../../types/page'
 import { BagIcon, CalendarIcon, CutleryIcon, HomeIcon } from '../ui/Icons'
 
-type MobileNavigationProps = { page: 'home' | 'menu' | 'detail' }
+type MobileNavigationProps = { page: PageId }
 
 export function MobileNavigation({ page }: MobileNavigationProps) {
-  const { showInfo, openCart } = useOverlay()
   const menuHref = useMenuHref()
 
   return (
@@ -24,18 +23,14 @@ export function MobileNavigation({ page }: MobileNavigationProps) {
         <CutleryIcon />
         Menu
       </Link>
-      <button
-        type="button"
-        data-info="reservation"
-        onClick={() => showInfo('reservation')}
-      >
+      <Link className={page === 'reservation' ? 'active' : ''} to="/reservasi">
         <CalendarIcon />
         Reservasi
-      </button>
-      <button type="button" data-cart-open onClick={() => openCart()}>
+      </Link>
+      <Link className={page === 'cart' ? 'active' : ''} to="/cart">
         <BagIcon />
         Keranjang
-      </button>
+      </Link>
     </nav>
   )
 }
