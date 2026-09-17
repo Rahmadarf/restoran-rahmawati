@@ -20,22 +20,6 @@ import {
 } from './overlay-context'
 
 const INFO: Record<InfoType, { title: string; body: ReactNode }> = {
-  reservation: {
-    title: 'Reservasi Meja',
-    body: (
-      <>
-        <p>
-          Halaman reservasi akan dibuat setelah desain Beranda dan Menu
-          disetujui.
-        </p>
-        <div className="notice">
-          <strong>Reservasi perlu konfirmasi restoran.</strong>Di tahap
-          berikutnya, permintaan reservasi akan diteruskan ke WhatsApp untuk
-          dikonfirmasi secara manual.
-        </div>
-      </>
-    ),
-  },
   contact: {
     title: 'Hubungi Rahmawati',
     body: (
@@ -51,25 +35,13 @@ const INFO: Record<InfoType, { title: string; body: ReactNode }> = {
       </>
     ),
   },
-  next: {
-    title: 'Pilihan sudah tercatat di preview',
-    body: (
-      <>
-        <p>
-          Halaman Keranjang, Detail Menu, dan Checkout akan dirancang setelah
-          review dua halaman ini.
-        </p>
-        <div className="notice">
-          <strong>Belum ada permintaan yang dikirim.</strong>Pemesanan nantinya
-          dilanjutkan melalui WhatsApp dan menunggu konfirmasi manual restoran.
-        </div>
-      </>
-    ),
-  },
 }
 
 export function OverlayProvider({ children }: { children: ReactNode }) {
   const [info, setInfo] = useState<InfoType | null>(null)
+  // Konten terakhir dipertahankan supaya tidak kosong selama fade-out dialog.
+  const [shownInfo, setShownInfo] = useState<InfoType | null>(null)
+  if (info && info !== shownInfo) setShownInfo(info)
   const [cartOpen, setCartOpen] = useState(false)
   const [emptyPreview, setEmptyPreview] = useState(false)
   const pendingFocus = useRef(false)
@@ -111,10 +83,9 @@ export function OverlayProvider({ children }: { children: ReactNode }) {
         title="Pilihan Anda"
         closeLabel="Tutup ringkasan keranjang"
         open={cartOpen}
-        onClose={() => {
-          setCartOpen(false)
-          setEmptyPreview(false)
-        }}
+        // emptyPreview di-reset oleh openCart berikutnya, bukan saat tutup,
+        // supaya isi dialog tidak berganti selama fade-out.
+        onClose={() => setCartOpen(false)}
       >
         <div className="dialog-body" id="cart-preview">
           {showEmpty ? (
@@ -172,10 +143,10 @@ export function OverlayProvider({ children }: { children: ReactNode }) {
                 id="next-preview"
                 onClick={() => {
                   setCartOpen(false)
-                  showInfo('next')
+                  navigate('/cart')
                 }}
               >
-                Tentang langkah berikutnya →
+                Lihat Keranjang →
               </button>
             </>
           )}
@@ -184,13 +155,13 @@ export function OverlayProvider({ children }: { children: ReactNode }) {
       <Dialog
         id="info-dialog"
         titleId="info-title"
-        title={info ? INFO[info].title : 'Informasi'}
+        title={shownInfo ? INFO[shownInfo].title : 'Informasi'}
         closeLabel="Tutup informasi"
         open={info !== null}
         onClose={() => setInfo(null)}
       >
         <div className="dialog-body" id="info-body">
-          {info ? INFO[info].body : null}
+          {shownInfo ? INFO[shownInfo].body : null}
         </div>
       </Dialog>
 

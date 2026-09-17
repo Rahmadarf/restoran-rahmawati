@@ -1,9 +1,9 @@
+import { Link } from 'react-router-dom'
+
 import { RESTAURANT } from '../../data/restaurant'
-import { useOverlay } from '../../features/ui/overlay-context'
 import { ArrowRightIcon, ArrowUpRightIcon } from '../ui/Icons'
 
 export function LocationSection() {
-  const { showInfo } = useOverlay()
 
   return (
     <section className="section wrap location" id="lokasi">
@@ -34,14 +34,9 @@ export function LocationSection() {
             </p>
           </div>
         </div>
-        <button
-          className="btn"
-          type="button"
-          data-info="reservation"
-          onClick={() => showInfo('reservation')}
-        >
+        <Link className="btn" to="/reservasi">
           Reservasi Meja <ArrowRightIcon />
-        </button>
+        </Link>
       </div>
       <div className="location-panel">
         <span className="brand-mark" aria-hidden="true">

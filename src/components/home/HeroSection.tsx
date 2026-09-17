@@ -1,11 +1,9 @@
 import { Link } from 'react-router-dom'
 
-import { useOverlay } from '../../features/ui/overlay-context'
 import { useMenuHref } from '../../hooks/useMenuHref'
 import { ArrowRightIcon } from '../ui/Icons'
 
 export function HeroSection() {
-  const { showInfo } = useOverlay()
   const menuHref = useMenuHref()
 
   return (
@@ -29,14 +27,9 @@ export function HeroSection() {
             <Link className="btn" to={menuHref()}>
               Pesan Sekarang <ArrowRightIcon />
             </Link>
-            <button
-              className="btn btn-outline"
-              type="button"
-              data-info="reservation"
-              onClick={() => showInfo('reservation')}
-            >
+            <Link className="btn btn-outline" to="/reservasi">
               Reservasi Meja
-            </button>
+            </Link>
           </div>
           <div className="hero-meta">
             <span>

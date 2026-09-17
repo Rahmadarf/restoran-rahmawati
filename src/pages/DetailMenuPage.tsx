@@ -3,12 +3,14 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 
 import { Layout } from '../components/layout/Layout'
 import { DetailOptions } from '../components/menu/DetailOptions'
+import { QuantitySelector } from '../components/menu/QuantitySelector'
 import { useToast } from '../components/ui/toast-context'
 import { productById } from '../data/menu'
 import { optionsFor } from '../data/options'
 import { RESTAURANT } from '../data/restaurant'
 import { useCart } from '../features/cart/cart-context'
 import { useMenuHref } from '../hooks/useMenuHref'
+import { useScrollReveal } from '../hooks/useScrollReveal'
 import { normalizeRow, unitPrice } from '../lib/cart-model'
 import { money } from '../lib/currency'
 
@@ -32,6 +34,8 @@ export function DetailMenuPage() {
   const [note, setNote] = useState(existing?.note ?? '')
   const [justAdded, setJustAdded] = useState(false)
   const addedTimer = useRef<number | undefined>(undefined)
+  // Di mobile, isi pilihan berada di bawah foto dan baru terlihat setelah scroll.
+  const mainRef = useScrollReveal<HTMLElement>('.detail-content')
 
   useEffect(() => () => window.clearTimeout(addedTimer.current), [])
 
@@ -122,7 +126,7 @@ export function DetailMenuPage() {
 
   return (
     <Layout page="detail" title="Detail Menu — Restoran Rahmawati">
-      <main id="main">
+      <main id="main" ref={mainRef}>
         <div className="wrap breadcrumb">
           <Link to={menuHref()}>← Kembali ke menu</Link>
           <span>Menu pilihan / Detail menu</span>
@@ -189,29 +193,14 @@ export function DetailMenuPage() {
                 langsung kepada staf.
               </p>
               <div className="detail-action">
-                <div className="quantity" data-component="QuantitySelector">
-                  <button
-                    type="button"
-                    data-detail-qty="-1"
-                    aria-label="Kurangi jumlah"
-                    disabled={sold || qty === 1}
-                    onClick={() => changeQty(-1)}
-                  >
-                    −
-                  </button>
-                  <output id="detail-quantity" aria-live="polite">
-                    {qty}
-                  </output>
-                  <button
-                    type="button"
-                    data-detail-qty="1"
-                    aria-label="Tambah jumlah"
-                    disabled={sold || qty === RESTAURANT.maxQtyPerItem}
-                    onClick={() => changeQty(1)}
-                  >
-                    +
-                  </button>
-                </div>
+                <QuantitySelector
+                  name={item.name}
+                  quantity={qty}
+                  min={1}
+                  disabled={sold}
+                  outputId="detail-quantity"
+                  onChange={changeQty}
+                />
                 <button
                   className="btn"
                   type="submit"

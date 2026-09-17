@@ -4,9 +4,10 @@ import { MobileNavigation } from './MobileNavigation'
 import { SiteFooter } from './SiteFooter'
 import { SiteHeader } from './SiteHeader'
 import { WhatsAppButton } from './WhatsAppButton'
+import type { PageId } from '../../types/page'
 
 type LayoutProps = {
-  page: 'home' | 'menu' | 'detail'
+  page: PageId
   title: string
   children: ReactNode
 }

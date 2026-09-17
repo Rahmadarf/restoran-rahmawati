@@ -1,3 +1,4 @@
+import { useChangePulse } from '../../hooks/useChangePulse'
 import { money } from '../../lib/currency'
 import { ArrowRightIcon } from '../ui/Icons'
 
@@ -8,6 +9,8 @@ type StickyCartBarProps = {
 }
 
 export function StickyCartBar({ count, total, onOpen }: StickyCartBarProps) {
+  const bumped = useChangePulse(count)
+
   return (
     <button
       id="cart-bar"
@@ -20,7 +23,12 @@ export function StickyCartBar({ count, total, onOpen }: StickyCartBarProps) {
       onClick={onOpen}
     >
       <span className="cart-start">
-        <span className="cart-count" id="cart-count">
+        <span
+          key={count}
+          className="cart-count"
+          id="cart-count"
+          data-bump={bumped || undefined}
+        >
           {count}
         </span>
         <span className="cart-label">Lihat Pilihan Anda</span>

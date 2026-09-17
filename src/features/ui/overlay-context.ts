@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react'
 
-export type InfoType = 'reservation' | 'contact' | 'next'
+export type InfoType = 'contact'
 
 export type OverlayContextValue = {
   showInfo: (type: InfoType) => void

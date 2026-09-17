@@ -1,16 +1,20 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
-import { useOverlay } from '../../features/ui/overlay-context'
+import { useCart } from '../../features/cart/cart-context'
 import { useMenuHref } from '../../hooks/useMenuHref'
+import type { PageId } from '../../types/page'
 import { ArrowRightIcon, MenuBarsIcon } from '../ui/Icons'
 
-type SiteHeaderProps = { page: 'home' | 'menu' | 'detail' }
+type SiteHeaderProps = { page: PageId }
 
 export function SiteHeader({ page }: SiteHeaderProps) {
   const [expanded, setExpanded] = useState(false)
-  const { showInfo } = useOverlay()
   const menuHref = useMenuHref()
+  const { count } = useCart()
+  const cartLabel = count ? `Keranjang (${count})` : 'Keranjang'
+  // Checkout adalah lanjutan keranjang, jadi tetap ditandai aktif di sini.
+  const inCart = page === 'cart' || page === 'checkout'
 
   return (
     <header className="site-header" data-component="SiteHeader">
@@ -35,16 +39,14 @@ export function SiteHeader({ page }: SiteHeaderProps) {
           </Link>
           <Link to="/#cerita">Cerita Kami</Link>
           <Link to="/#lokasi">Lokasi</Link>
+          <Link to="/cart" aria-current={inCart ? 'page' : undefined}>
+            {cartLabel}
+          </Link>
         </nav>
         <div className="header-actions">
-          <button
-            className="btn btn-outline"
-            type="button"
-            data-info="reservation"
-            onClick={() => showInfo('reservation')}
-          >
+          <Link className="btn btn-outline" to="/reservasi">
             Reservasi Meja
-          </button>
+          </Link>
           <Link className="btn" to={menuHref()}>
             Pesan Sekarang <ArrowRightIcon />
           </Link>
@@ -70,13 +72,10 @@ export function SiteHeader({ page }: SiteHeaderProps) {
         <Link to={menuHref()}>Menu Kami</Link>
         <Link to="/#cerita">Cerita Kami</Link>
         <Link to="/#lokasi">Lokasi &amp; jam buka</Link>
-        <button
-          type="button"
-          data-info="reservation"
-          onClick={() => showInfo('reservation')}
-        >
-          Reservasi Meja
-        </button>
+        <Link to="/reservasi">Reservasi Meja</Link>
+        <Link to="/cart" aria-current={inCart ? 'page' : undefined}>
+          {cartLabel}
+        </Link>
       </nav>
     </header>
   )
