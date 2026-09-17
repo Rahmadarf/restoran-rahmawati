@@ -11,7 +11,7 @@ export function GallerySection() {
               di setiap sudut.
             </h2>
           </div>
-          <p style={{ color: '#bfc4dd' }}>
+          <p style={{ color: '#c5c2b7' }}>
             Makanan hangat, suasana akrab,
             <br />
             dan waktu yang terasa lebih santai.
@@ -56,7 +56,7 @@ export function GallerySection() {
             </div>
             <p
               className="small"
-              style={{ color: '#bfc4dd', marginTop: '10px' }}
+              style={{ color: '#c5c2b7', marginTop: '10px' }}
             >
               Kata teman semeja
               <br />
